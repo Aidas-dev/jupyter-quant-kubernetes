@@ -3,7 +3,7 @@
 ###############################################################################
 # hadolint global ignore=DL3003,DL3008,SC2028,DL3013
 ARG IMG_PYTHON_VERSION=3.13
-FROM nvidia/cuda:12.4.1-runtime-ubuntu22.04 AS builder
+FROM nvidia/cuda:12.9.1-runtime-ubuntu22.04 AS builder
 
 # Use TARGETARCH build argument
 ARG TARGETARCH
@@ -47,7 +47,7 @@ RUN python3 -m pip install --no-cache-dir -U \
 # Final stage
 ###############################################################################
 ARG IMG_PYTHON_VERSION=3.13
-FROM nvidia/cuda:12.4.1-runtime-ubuntu22.04
+FROM nvidia/cuda:12.9.1-runtime-ubuntu22.04
 
 # Use TARGETARCH build argument
 ARG TARGETARCH
