@@ -13,3 +13,39 @@ pass/
 .vscode/
 .venv/
 uv.lock
+
+# Git
+.git/
+
+# IDE and editor files
+.idea/
+
+# Qwen AI configuration
+.qwen/
+
+# SSH keys (should never be in container)
+.ssh/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Markdown and documentation (except needed ones)
+*.md
+
+# Test and coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# mypy and type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Jupyter
+.jupyter/

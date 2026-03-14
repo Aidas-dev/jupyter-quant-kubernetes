@@ -134,7 +134,7 @@ RUN --mount=type=bind,from=builder,source=/wheels,target=/wheels \
   pip install --user --no-deps --compile --no-cache-dir /wheels/* && \
   # Install GPU-accelerated trading packages
   pip install --user --no-cache-dir \
-    torch --index-url https://download.pytorch.org/whl/cu124 && \
+    torch --index-url https://download.pytorch.org/whl/cu12 && \
   pip install --user --no-cache-dir \
     xgboost-cu12 && \
   # Install cuDF for GPU DataFrame operations (optional, comment out if not needed)
