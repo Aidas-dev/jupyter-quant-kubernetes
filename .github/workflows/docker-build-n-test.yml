@@ -8,9 +8,9 @@ on:
     branches: ["master"]
 
 env:
-  IMAGE_NAME: gnzsnz/jupyter-quant
-  GH_IMAGE_NAME: ghcr.io/quantbelt/jupyter-quant
-  PLATFORMS: linux/amd64,linux/arm64
+  IMAGE_NAME: Aidas-dev/jupyter-quant-kubernetes
+  GH_IMAGE_NAME: ghcr.io/aidas-dev/jupyter-quant-kubernetes
+  PLATFORMS: linux/amd64
   PACKAGE_NAME: jupyter-quant
 
 jobs:

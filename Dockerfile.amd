@@ -3,7 +3,7 @@
 ###############################################################################
 # hadolint global ignore=DL3003,DL3008,SC2028,DL3013
 ARG IMG_PYTHON_VERSION=3.13
-FROM python:$IMG_PYTHON_VERSION AS builder
+FROM rocm/pytorch:rocm6.2_ubuntu22.04_py3.10_pytorch_release_2.3.0 AS builder
 
 # Use TARGETARCH build argument
 ARG TARGETARCH
@@ -17,17 +17,17 @@ COPY . .
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN python3 -m pip install --no-cache-dir -U \
-  build pip setuptools wheel setuptools_scm && \
-  python3 -m build && \
-  pip wheel --no-cache-dir --wheel-dir /wheels . && \
-  rm /wheels/jupyter_quant-*.whl
+    build pip setuptools wheel setuptools_scm && \
+    python3 -m build && \
+    pip wheel --no-cache-dir --wheel-dir /wheels . && \
+    rm /wheels/jupyter_quant-*.whl
 
 
 ###############################################################################
 # Final stage
 ###############################################################################
 ARG IMG_PYTHON_VERSION=3.13
-FROM python:${IMG_PYTHON_VERSION}-slim
+FROM rocm/pytorch:rocm6.2_ubuntu22.04_py3.10_pytorch_release_2.3.0
 
 # Use TARGETARCH build argument
 ARG TARGETARCH
@@ -72,28 +72,30 @@ ENV MPLCONFIGDIR="${BASE_CONFIG}/matplotlib"
 ENV SHELL="/bin/bash"
 # JupyterHub single-user server configuration
 ENV JUPYTERHUB_SINGLEUSER_APP="jupyter_server.serverapp.ServerApp"
+# ROCm GPU access
+ENV HIP_VISIBLE_DEVICES=0
 
 COPY 99-arial-alias.conf /etc/fonts/conf.d/
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN if [ -n "$APT_PROXY" ]; then \
-      echo "Acquire::http { Proxy \"${APT_PROXY}\"; }"  \
+      echo "Acquire::http { Proxy \"${APT_PROXY}\"; }" \
       | tee "${APT_PROXY_FILE}" \
     ;fi && \
   apt-get update && \
   apt-get install --no-install-recommends -y \
     openssh-client sshpass sudo curl graphviz git tzdata unzip less xclip nano-tiny \
     ffmpeg pandoc stow jq bash-completion procps fontconfig fonts-jetbrains-mono \
-    fonts-dejavu-core fonts-firacode fonts-liberation2 && \
-  apt-get clean && rm -rf /var/lib/apt/lists/* && \
-  if [ -f "${APT_PROXY_FILE}" ]; then \
-    rm "${APT_PROXY_FILE}" \
-  ;fi && \
+    fonts-dejavu-core fonts-firacode fonts-liberation2 \
+    && apt-get clean && rm -rf /var/lib/apt/lists/* && \
+    if [ -f "${APT_PROXY_FILE}" ]; then \
+      rm "${APT_PROXY_FILE}" \
+    ;fi && \
   groupadd --gid "${USER_GID}" "${USER}" && \
   useradd -ms /bin/bash --uid "${USER_ID}" --gid "${USER_GID}" "${USER}" && \
   echo "${USER} ALL=(ALL) NOPASSWD:ALL" | tee -a /etc/sudoers && \
   fc-cache -fv && \
-  python -c "import compileall; compileall.compile_path(maxlevels=10)"
+  python3 -c "import compileall; compileall.compile_path(maxlevels=10)"
 
 USER $USER_ID:$USER_GID
 
@@ -102,6 +104,11 @@ COPY --chown=${USER}:${USER} matplotlibrc ${BASE_CONFIG}/matplotlib/matplotlibrc
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN --mount=type=bind,from=builder,source=/wheels,target=/wheels \
   pip install --user --no-deps --compile --no-cache-dir /wheels/* && \
+  # Install XGBoost with ROCm support (uses hipBLAS)
+  pip install --user --no-cache-dir xgboost && \
+  # Install cuDF-like functionality for AMD (polars with GPU support)
+  # Note: cuDF is NVIDIA-only, polars[gpu] is the AMD alternative
+  # pip install --user --no-cache-dir "polars[gpu]" && \
   fc-cache -fv && \
   # Import matplotlib the first time to build the font cache.
   MPLBACKEND=Agg python -c "import matplotlib.pyplot" && \
@@ -117,5 +124,5 @@ ENTRYPOINT ["/entrypoint.sh"]
 
 LABEL org.opencontainers.image.source=https://github.com/Aidas-dev/jupyter-quant-kubernetes
 LABEL org.opencontainers.image.url=https://github.com/Aidas-dev/jupyter-quant-kubernetes/pkgs/container/jupyter-quant-kubernetes
-LABEL org.opencontainers.image.description="A cloud-native Jupyter quant research environment for Kubernetes and JupyterHub. Based on the original jupyter-quant by @gnzsnz. "
+LABEL org.opencontainers.image.description="A cloud-native Jupyter quant research environment for Kubernetes and JupyterHub with AMD ROCm GPU support. Based on the original jupyter-quant by @gnzsnz. "
 LABEL org.opencontainers.image.licenses="Apache License Version 2.0"

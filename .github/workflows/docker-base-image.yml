@@ -6,10 +6,10 @@ on:
   workflow_dispatch:
 
 env:
-    IMAGE_NAME: gnzsnz/jupyter-quant
-    GH_IMAGE_NAME: ghcr.io/quantbelt/jupyter-quant
+    IMAGE_NAME: Aidas-dev/jupyter-quant-kubernetes
+    GH_IMAGE_NAME: ghcr.io/aidas-dev/jupyter-quant-kubernetes
     BASE_IMAGE: python
-    PLATFORMS: linux/amd64,linux/arm64
+    PLATFORMS: linux/amd64
 
 jobs:
     check_base:

@@ -1,0 +1,132 @@
+name: Build 🛠️ GPU Docker Images
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["master", "dev"]
+    paths:
+      - "Dockerfile.nvidia"
+      - "Dockerfile.amd"
+  pull_request:
+    branches: ["master"]
+    paths:
+      - "Dockerfile.nvidia"
+      - "Dockerfile.amd"
+
+env:
+  IMAGE_NAME: Aidas-dev/jupyter-quant-kubernetes
+  GH_IMAGE_NAME: ghcr.io/aidas-dev/jupyter-quant-kubernetes
+  PLATFORMS: linux/amd64
+
+jobs:
+  docker_build_nvidia:
+    name: Build NVIDIA GPU Image
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Get environment variables
+        run: |
+          grep -v '#' .env-dist | grep '=' > .env
+          while IFS= read -r line; do
+            echo $line >> $GITHUB_ENV ;
+          done < .env
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
+        with:
+          platforms: ${{ env.PLATFORMS }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: |
+            ${{ env.IMAGE_NAME }}
+            ${{ env.GH_IMAGE_NAME }}
+          flavor: |
+            latest=false
+            suffix=-nvidia
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+
+      - name: Build NVIDIA Docker image
+        uses: docker/build-push-action@v7
+        with:
+          push: false
+          load: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          context: .
+          file: ./Dockerfile.nvidia
+          platforms: ${{ env.PLATFORMS }}
+          build-args: |
+            USER=${{ env.USER }}
+            USER_ID=${{ env.USER_ID }}
+            USER_GID=${{ env.USER_GID }}
+            IMG_PYTHON_VERSION=${{ env.IMG_PYTHON_VERSION}}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  docker_build_amd:
+    name: Build AMD GPU Image
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Get environment variables
+        run: |
+          grep -v '#' .env-dist | grep '=' > .env
+          while IFS= read -r line; do
+            echo $line >> $GITHUB_ENV ;
+          done < .env
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
+        with:
+          platforms: ${{ env.PLATFORMS }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: |
+            ${{ env.IMAGE_NAME }}
+            ${{ env.GH_IMAGE_NAME }}
+          flavor: |
+            latest=false
+            suffix=-amd
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+
+      - name: Build AMD Docker image
+        uses: docker/build-push-action@v7
+        with:
+          push: false
+          load: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          context: .
+          file: ./Dockerfile.amd
+          platforms: ${{ env.PLATFORMS }}
+          build-args: |
+            USER=${{ env.USER }}
+            USER_ID=${{ env.USER_ID }}
+            USER_GID=${{ env.USER_GID }}
+            IMG_PYTHON_VERSION=${{ env.IMG_PYTHON_VERSION}}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}

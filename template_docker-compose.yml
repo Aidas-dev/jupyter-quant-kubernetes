@@ -1,10 +1,15 @@
+# Docker Compose template for local testing
+# For production, use JupyterHub on Kubernetes
+# See: https://z2jh.jupyter.org/en/stable/
+# Image: Aidas-dev/jupyter-quant-kubernetes
+#
+# Based on the original jupyter-quant by @gnzsnz:
+# https://github.com/quantbelt/jupyter-quant
+
 services:
   jupyter-quant:
     build:
       context: .
-      # platforms:
-      #   - "linux/amd64"
-      #   - "linux/arm64"
       args:
         USER: ${USER}
         USER_ID: ${USER_ID}
@@ -12,14 +17,11 @@ services:
         IMG_PYTHON_VERSION: ${IMG_PYTHON_VERSION}
         APT_PROXY: ${APT_PROXY}
         IMAGE_VERSION: ${IMAGE_VERSION}
-    image: gnzsnz/jupyter-quant:${IMAGE_VERSION}
+    image: Aidas-dev/jupyter-quant-kubernetes:${IMAGE_VERSION}
     environment:
       APT_PROXY: ${APT_PROXY}
       BYODF: ${BYODF:-}
       SSH_KEYDIR: ${SSH_KEYDIR:-}
-      # START_SCRIPTS: ${START_SCRIPTS:-}
-      # SSH_PASSPHRASE: ${SSH_PASSPHRASE:-}
-      # SSH_PASSPHRASE_FILE: ${SSH_PASSPHRASE_FILE:-}
       TZ: ${QUANT_TZ:-}
     restart: unless-stopped
     ports:
@@ -28,13 +30,7 @@ services:
       - quant_conf:/home/${USER}/.config
       - quant_data:/home/${USER}/.local
       - ${PWD}/Notebooks:/home/${USER}/Notebooks
-    # secrets:
-    #   - ssh_passphrase
 
 volumes:
   quant_conf:
   quant_data:
-
-# secrets:
-#   ssh_passphrase:
-#     file: pass/ssh_password.txt

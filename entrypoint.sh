@@ -72,13 +72,27 @@ stop() {
 	echo "> Done... $?"
 }
 
-echo "> Running Jupyter-lab 🐍"
+# Detect if running under JupyterHub
+is_jupyterhub() {
+	[ -n "${JUPYTERHUB_API_TOKEN}" ] || [ -n "${JUPYTERHUB_BASE_URL}" ]
+}
+
+echo "> Running Jupyter 🐍"
 echo "> Running as $(id)"
 echo "> Parameters: $*"
 echo "> Jupyter options: $JUPYTER_OPT"
+if is_jupyterhub; then
+	echo "> Detected JupyterHub environment"
+fi
 
-if [ "$(basename "$1" 2>/dev/null)" == "$DAEMON" ]; then
+if [ "$(basename "$1" 2>/dev/null)" == "jupyterhub-singleuser" ]; then
+	# Running as jupyterhub-singleuser (JupyterHub/Kubernetes)
+	echo "> Starting $* $JUPYTER_OPT"
+	trap stop SIGINT SIGTERM
+	start_scripts
+	exec "$@" "${JUPYTER_OPT}"
 
+elif [ "$(basename "$1" 2>/dev/null)" == "$DAEMON" ]; then
 	echo "> Starting $* $JUPYTER_OPT"
 	trap stop SIGINT SIGTERM
 	start_scripts

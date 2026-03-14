@@ -1,0 +1,48 @@
+# NVIDIA GPU JupyterHub Configuration
+# Requires: NVIDIA GPU Operator installed on cluster
+# Image: Aidas-dev/jupyter-quant-kubernetes:nvidia
+
+singleuser:
+  image:
+    name: Aidas-dev/jupyter-quant-kubernetes
+    tag: nvidia
+  cpu:
+    limit: 8
+    guarantee: 4
+  memory:
+    limit: 32G
+    guarantee: 16G
+  extraResource:
+    limits:
+      nvidia.com/gpu: 1
+  storage:
+    type: dynamic
+    capacity: 50Gi
+  profileList:
+    - display_name: "1 GPU (Training)"
+      description: "Single GPU for model training"
+      kubespawner_override:
+        extraResource:
+          limits:
+            nvidia.com/gpu: 1
+    - display_name: "2 GPUs (Large Training)"
+      description: "Dual GPU for large models"
+      kubespawner_override:
+        extraResource:
+          limits:
+            nvidia.com/gpu: 2
+        memory:
+          limit: 64G
+          guarantee: 32G
+    - display_name: "4 GPUs (Distributed Training)"
+      description: "Multi-GPU for distributed training"
+      kubespawner_override:
+        extraResource:
+          limits:
+            nvidia.com/gpu: 4
+        memory:
+          limit: 128G
+          guarantee: 64G
+        cpu:
+          limit: 32
+          guarantee: 16

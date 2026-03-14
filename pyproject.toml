@@ -31,6 +31,7 @@ dependencies = [
     "ipywidgets==8.1.8",
     "isort==8.0.1",
     "jedi-language-server==0.46.0",
+    "jupyterhub==5.5.0",
     "jupyterlab==4.5.5",
     "jupyterlab-lsp==5.2.0",
     "jupyterlab_code_formatter==3.0.3",
@@ -72,6 +73,21 @@ bayes = [
     "pymc==5.28.1",
     "formulae==0.6.2",
     "graphviz==0.21",
+]
+# GPU-accelerated trading packages (NVIDIA CUDA 12.x)
+gpu-nvidia = [
+    "torch>=2.4.0",
+    "xgboost-cu12>=2.0.0",
+    # Optional: RAPIDS cuDF for GPU DataFrame operations
+    # "cudf-cu12>=24.0.0",
+    # "dask-cudf-cu12>=24.0.0",
+]
+# GPU-accelerated trading packages (AMD ROCm 6.x)
+gpu-amd = [
+    "torch>=2.4.0",
+    "xgboost>=2.0.0",  # ROCm support built-in
+    # Optional: Polars with GPU support (AMD alternative to cuDF)
+    # "polars[gpu]>=1.0.0",
 ]
 dev = ["pre-commit>=3.7.1", "build", "wheel", "twine", "setuptools-scm"]
 
