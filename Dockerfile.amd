@@ -88,8 +88,15 @@ RUN apt-get update && \
       ffmpeg pandoc stow jq bash-completion procps fontconfig fonts-jetbrains-mono \
       fonts-dejavu-core fonts-firacode fonts-liberation2 && \
     apt-get clean && rm -rf /var/lib/apt/lists/* && \
-    groupadd --gid "${USER_GID}" "${USER}" && \
-    useradd -ms /bin/bash --uid "${USER_ID}" --gid "${USER_GID}" "${USER}" && \
+    # Create user/group (handle case where GID 1000 already exists)
+    if ! getent group "${USER_GID}" >/dev/null; then \
+      groupadd --gid "${USER_GID}" "${USER}"; \
+    else \
+      addgroup --gid "${USER_GID}" "${USER}" 2>/dev/null || true; \
+    fi && \
+    if ! id -u "${USER}" >/dev/null 2>&1; then \
+      useradd -ms /bin/bash --uid "${USER_ID}" --gid "${USER_GID}" "${USER}"; \
+    fi && \
     echo "${USER} ALL=(ALL) NOPASSWD:ALL" | tee -a /etc/sudoers && \
     fc-cache -fv && \
     python3 -c "import compileall; compileall.compile_path(maxlevels=10)"
