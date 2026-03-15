@@ -93,6 +93,7 @@ jobs:
             USER_ID=${{ env.USER_ID }}
             USER_GID=${{ env.USER_GID }}
             IMG_PYTHON_VERSION=${{ env.IMG_PYTHON_VERSION}}
+            IMAGE_VERSION=${{ steps.version.outputs.version }}
           platforms: ${{ env.PLATFORMS }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -173,6 +174,7 @@ jobs:
             USER_ID=${{ env.USER_ID }}
             USER_GID=${{ env.USER_GID }}
             IMG_PYTHON_VERSION=${{ env.IMG_PYTHON_VERSION}}
+            IMAGE_VERSION=${{ steps.version.outputs.version }}
           platforms: ${{ env.PLATFORMS }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -253,6 +255,7 @@ jobs:
             USER_ID=${{ env.USER_ID }}
             USER_GID=${{ env.USER_GID }}
             IMG_PYTHON_VERSION=${{ env.IMG_PYTHON_VERSION}}
+            IMAGE_VERSION=${{ steps.version.outputs.version }}
           platforms: ${{ env.PLATFORMS }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

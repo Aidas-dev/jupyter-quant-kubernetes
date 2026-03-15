@@ -13,3 +13,6 @@ pass/
 .vscode/
 .idea/
 *.log
+.ssh/
+! .ssh/config
+! .ssh/known_hosts

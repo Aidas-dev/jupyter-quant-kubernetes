@@ -1,4 +1,4 @@
-name: Build 🛠️ and test 🧪 jupyter-quant Docker Image and pypi package 📦
+iname: Build 🛠️ and test 🧪 jupyter-quant Docker Image and pypi package 📦
 
 on:
   workflow_dispatch:

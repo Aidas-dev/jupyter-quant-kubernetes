@@ -15,6 +15,10 @@ ARG DEBIAN_FRONTEND=noninteractive
 WORKDIR /builder
 COPY . .
 
+# Accept version from build arg for setuptools-scm fallback
+ARG IMAGE_VERSION=1.0.0
+ENV SETUPTOOLS_SCM_PRETEND_VERSION=${IMAGE_VERSION}
+
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN python3 -m pip install --no-cache-dir -U \
   build pip setuptools wheel setuptools_scm && \
