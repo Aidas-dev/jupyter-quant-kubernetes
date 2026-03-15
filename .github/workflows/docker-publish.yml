@@ -97,6 +97,7 @@ jobs:
           platforms: ${{ env.PLATFORMS }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          no-cache: true
 
   publish_docker_nvidia:
     name: Build and publish NVIDIA GPU Docker 🐳 image
@@ -178,6 +179,7 @@ jobs:
           platforms: ${{ env.PLATFORMS }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          no-cache: true
 
   publish_docker_amd:
     name: Build and publish AMD GPU Docker 🐳 image
@@ -259,6 +261,7 @@ jobs:
           platforms: ${{ env.PLATFORMS }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          no-cache: true
 
   build_py:
     name: Build 🐍 distribution 📦
