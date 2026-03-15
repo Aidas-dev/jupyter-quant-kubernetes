@@ -13,6 +13,7 @@ permissions:
 env:
   IMAGE_NAME: Aidas-dev/jupyter-quant-kubernetes
   GH_IMAGE_NAME: ghcr.io/aidas-dev/jupyter-quant-kubernetes
+  DOCKERHUB_IMAGE_NAME: kubexa/jupyter-quant-kubernetes
   PLATFORMS: linux/amd64
   PYPI_PACKAGE: jupyter-quant
   PYPI_BASE_URL: https://pypi.org/p
@@ -58,8 +59,8 @@ jobs:
         uses: docker/metadata-action@v6
         with:
           images: |
-            ${{ env.IMAGE_NAME }}
             ${{ env.GH_IMAGE_NAME }}
+            ${{ env.DOCKERHUB_IMAGE_NAME }}
           flavor: |
             latest=true
           tags: |
@@ -137,8 +138,8 @@ jobs:
         uses: docker/metadata-action@v6
         with:
           images: |
-            ${{ env.IMAGE_NAME }}
             ${{ env.GH_IMAGE_NAME }}
+            ${{ env.DOCKERHUB_IMAGE_NAME }}
           flavor: |
             latest=true
             suffix=-nvidia
@@ -217,8 +218,8 @@ jobs:
         uses: docker/metadata-action@v6
         with:
           images: |
-            ${{ env.IMAGE_NAME }}
             ${{ env.GH_IMAGE_NAME }}
+            ${{ env.DOCKERHUB_IMAGE_NAME }}
           flavor: |
             latest=true
             suffix=-amd
