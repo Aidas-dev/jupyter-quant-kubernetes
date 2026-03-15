@@ -28,8 +28,7 @@ RUN apt-get update && \
     pkg-config \
     cmake \
     && rm -rf /var/lib/apt/lists/* \
-    && ln -s /usr/bin/python3.12 /usr/bin/python3 \
-    && ln -s /usr/bin/python3.12 /usr/bin/python
+    && ln -sf /usr/bin/python3.12 /usr/bin/python
 
 WORKDIR /builder
 COPY . .
@@ -116,8 +115,7 @@ RUN apt-get update && \
     useradd -ms /bin/bash --uid "${USER_ID}" --gid "${USER_GID}" "${USER}" && \
     echo "${USER} ALL=(ALL) NOPASSWD:ALL" | tee -a /etc/sudoers && \
     fc-cache -fv && \
-    ln -s /usr/bin/python3.12 /usr/bin/python3 && \
-    ln -s /usr/bin/python3.12 /usr/bin/python && \
+    ln -sf /usr/bin/python3.12 /usr/bin/python && \
     python3 -c "import compileall; compileall.compile_path(maxlevels=10)"
 
 USER $USER_ID:$USER_GID
