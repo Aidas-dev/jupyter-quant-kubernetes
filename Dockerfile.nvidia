@@ -132,22 +132,23 @@ RUN apt-get update && \
     ln -sf /usr/bin/python3.12 /usr/bin/python && \
     python3 -c "import compileall; compileall.compile_path(maxlevels=10)"
 
+# Install packages system-wide BEFORE user switch (as root)
+RUN --mount=type=bind,from=builder,source=/wheels,target=/wheels \
+  pip install --no-deps --compile --no-cache-dir /wheels/* && \
+  # Install GPU-accelerated trading packages (CUDA 13)
+  pip install --no-cache-dir \
+    torch --index-url https://download.pytorch.org/whl/cu131 && \
+  pip install --no-cache-dir \
+    xgboost-cu12
+
 USER $USER_ID:$USER_GID
 
 COPY --chown=${USER}:${USER} matplotlibrc ${BASE_CONFIG}/matplotlib/matplotlibrc
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-# Install packages system-wide using sudo (after USER switch)
-RUN --mount=type=bind,from=builder,source=/wheels,target=/wheels \
-  sudo pip install --no-deps --compile --no-cache-dir /wheels/* && \
-  # Install GPU-accelerated trading packages (CUDA 13)
-  sudo pip install --no-cache-dir \
-    torch --index-url https://download.pytorch.org/whl/cu131 && \
-  sudo pip install --no-cache-dir \
-    xgboost-cu12 && \
-  # Install cuDF for GPU DataFrame operations (optional, comment out if not needed)
-  # pip install --user --no-cache-dir cudf-cu12 dask-cudf-cu12 --extra-index-url https://pypi.nvidia.com && \
-  fc-cache -fv && \
+# Install cuDF for GPU DataFrame operations (optional, comment out if not needed)
+# RUN pip install --no-cache-dir cudf-cu12 dask-cudf-cu12 --extra-index-url https://pypi.nvidia.com
+RUN fc-cache -fv && \
   # Import matplotlib the first time to build the font cache.
   MPLBACKEND=Agg python -c "import matplotlib.pyplot" && \
   mkdir "${JUPYTER_SERVER_ROOT}"
