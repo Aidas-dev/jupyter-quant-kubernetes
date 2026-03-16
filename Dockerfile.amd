@@ -115,17 +115,19 @@ RUN apt-get update && \
 RUN --mount=type=bind,from=builder,source=/wheels,target=/wheels \
   pip install --no-deps --compile --no-cache-dir /wheels/* && \
   # Install XGBoost with ROCm support (uses hipBLAS)
-  pip install --no-cache-dir xgboost
+  pip install --no-cache-dir xgboost && \
+  # Import matplotlib the first time to build the font cache (as root)
+  MPLBACKEND=Agg python3 -c "import matplotlib.pyplot" && \
+  # Create notebooks directory with correct permissions
+  mkdir -p /home/${USER}/Notebooks && \
+  chown -R ${USER}:${USER} /home/${USER}/.local /home/${USER}/Notebooks
 
 USER $USER_ID:$USER_GID
 
 COPY --chown=${USER}:${USER} matplotlibrc ${BASE_CONFIG}/matplotlib/matplotlibrc
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-RUN fc-cache -fv && \
-  # Import matplotlib the first time to build the font cache.
-  MPLBACKEND=Agg python -c "import matplotlib.pyplot" && \
-  mkdir "${JUPYTER_SERVER_ROOT}"
+RUN fc-cache -fv
 
 COPY entrypoint.sh /
 WORKDIR ${JUPYTER_SERVER_ROOT}

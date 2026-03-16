@@ -129,8 +129,9 @@ RUN apt-get update && \
     fi && \
     echo "${USER} ALL=(ALL) NOPASSWD:ALL" | tee -a /etc/sudoers && \
     fc-cache -fv && \
+    ln -sf /usr/bin/python3.12 /usr/bin/python3 && \
     ln -sf /usr/bin/python3.12 /usr/bin/python && \
-    python3 -c "import compileall; compileall.compile_path(maxlevels=10)"
+    /usr/bin/python3.12 -c "import compileall; compileall.compile_path(maxlevels=10)"
 
 # Install packages system-wide BEFORE user switch (as root)
 RUN --mount=type=bind,from=builder,source=/wheels,target=/wheels \
@@ -139,7 +140,12 @@ RUN --mount=type=bind,from=builder,source=/wheels,target=/wheels \
   pip install --no-cache-dir \
     torch --index-url https://download.pytorch.org/whl/cu131 && \
   pip install --no-cache-dir \
-    xgboost-cu12
+    xgboost-cu12 && \
+  # Import matplotlib the first time to build the font cache (as root)
+  MPLBACKEND=Agg python3 -c "import matplotlib.pyplot" && \
+  # Create notebooks directory with correct permissions
+  mkdir -p /home/${USER}/Notebooks && \
+  chown -R ${USER}:${USER} /home/${USER}/.local /home/${USER}/Notebooks
 
 USER $USER_ID:$USER_GID
 
@@ -148,10 +154,7 @@ COPY --chown=${USER}:${USER} matplotlibrc ${BASE_CONFIG}/matplotlib/matplotlibrc
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Install cuDF for GPU DataFrame operations (optional, comment out if not needed)
 # RUN pip install --no-cache-dir cudf-cu12 dask-cudf-cu12 --extra-index-url https://pypi.nvidia.com
-RUN fc-cache -fv && \
-  # Import matplotlib the first time to build the font cache.
-  MPLBACKEND=Agg python -c "import matplotlib.pyplot" && \
-  mkdir "${JUPYTER_SERVER_ROOT}"
+RUN fc-cache -fv
 
 COPY entrypoint.sh /
 WORKDIR ${JUPYTER_SERVER_ROOT}
