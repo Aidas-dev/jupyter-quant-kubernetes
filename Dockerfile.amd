@@ -20,7 +20,9 @@ ARG IMAGE_VERSION=1.0.0
 ENV SETUPTOOLS_SCM_PRETEND_VERSION=${IMAGE_VERSION}
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-RUN python3 -m pip install --no-cache-dir -U \
+# Remove PEP 668 marker for system-wide pip installs
+RUN rm -f /usr/lib/python3.12/EXTERNALLY-MANAGED && \
+    python3 -m pip install --no-cache-dir -U \
     build pip setuptools wheel setuptools_scm && \
     python3 -m build && \
     pip wheel --no-cache-dir --wheel-dir /wheels . && \
@@ -48,7 +50,6 @@ ARG USER_GID="${USER_GID:-10000}"
 ENV IMAGE_VERSION=2502.1
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
-ENV PIP_USER=true
 ENV PIP_NO_CACHE_DIR=1
 ENV PATH="$PATH:/home/$USER/.local/bin"
 
@@ -115,10 +116,12 @@ USER $USER_ID:$USER_GID
 COPY --chown=${USER}:${USER} matplotlibrc ${BASE_CONFIG}/matplotlib/matplotlibrc
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+# Remove PEP 668 marker and install packages system-wide
+RUN rm -f /usr/lib/python3.12/EXTERNALLY-MANAGED
 RUN --mount=type=bind,from=builder,source=/wheels,target=/wheels \
-  pip install --user --no-deps --compile --no-cache-dir /wheels/* && \
+  pip install --no-deps --compile --no-cache-dir /wheels/* && \
   # Install XGBoost with ROCm support (uses hipBLAS)
-  pip install --user --no-cache-dir xgboost && \
+  pip install --no-cache-dir xgboost && \
   # Install cuDF-like functionality for AMD (polars with GPU support)
   # Note: cuDF is NVIDIA-only, polars[gpu] is the AMD alternative
   # pip install --user --no-cache-dir "polars[gpu]" && \
