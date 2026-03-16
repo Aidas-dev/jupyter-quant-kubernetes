@@ -116,12 +116,11 @@ USER $USER_ID:$USER_GID
 COPY --chown=${USER}:${USER} matplotlibrc ${BASE_CONFIG}/matplotlib/matplotlibrc
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-# Remove PEP 668 marker and install packages system-wide
-RUN rm -f /usr/lib/python3.12/EXTERNALLY-MANAGED
+# Install packages system-wide (as root before USER switch, but we need sudo for EXTERNALLY-MANAGED)
 RUN --mount=type=bind,from=builder,source=/wheels,target=/wheels \
-  pip install --no-deps --compile --no-cache-dir /wheels/* && \
+  sudo pip install --no-deps --compile --no-cache-dir /wheels/* && \
   # Install XGBoost with ROCm support (uses hipBLAS)
-  pip install --no-cache-dir xgboost && \
+  sudo pip install --no-cache-dir xgboost && \
   # Install cuDF-like functionality for AMD (polars with GPU support)
   # Note: cuDF is NVIDIA-only, polars[gpu] is the AMD alternative
   # pip install --user --no-cache-dir "polars[gpu]" && \

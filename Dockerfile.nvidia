@@ -112,8 +112,21 @@ RUN apt-get update && \
       liblapack3 \
       gfortran && \
     apt-get clean && rm -rf /var/lib/apt/lists/* && \
-    groupadd --gid "${USER_GID}" "${USER}" && \
-    useradd -ms /bin/bash --uid "${USER_ID}" --gid "${USER_GID}" "${USER}" && \
+    # Create user/group (handle case where GID already exists)
+    if ! getent group "${USER_GID}" >/dev/null; then \
+      groupadd --gid "${USER_GID}" "${USER}"; \
+    else \
+      addgroup --gid "${USER_GID}" "${USER}" 2>/dev/null || true; \
+    fi && \
+    # Handle case where UID already exists
+    if id -u "${USER}" >/dev/null 2>&1; then \
+      usermod -g "${USER_GID}" "${USER}" 2>/dev/null || true; \
+    elif getent passwd "${USER_ID}" >/dev/null 2>&1; then \
+      EXISTING_USER=$(getent passwd "${USER_ID}" | cut -d: -f1); \
+      echo "Using existing user ${EXISTING_USER} with UID ${USER_ID}"; \
+    else \
+      useradd -ms /bin/bash --uid "${USER_ID}" --gid "${USER_GID}" "${USER}"; \
+    fi && \
     echo "${USER} ALL=(ALL) NOPASSWD:ALL" | tee -a /etc/sudoers && \
     fc-cache -fv && \
     ln -sf /usr/bin/python3.12 /usr/bin/python && \
@@ -124,14 +137,13 @@ USER $USER_ID:$USER_GID
 COPY --chown=${USER}:${USER} matplotlibrc ${BASE_CONFIG}/matplotlib/matplotlibrc
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-# Remove PEP 668 marker and install packages system-wide
-RUN rm -f /usr/lib/python3.12/EXTERNALLY-MANAGED
+# Install packages system-wide using sudo (after USER switch)
 RUN --mount=type=bind,from=builder,source=/wheels,target=/wheels \
-  pip install --no-deps --compile --no-cache-dir /wheels/* && \
+  sudo pip install --no-deps --compile --no-cache-dir /wheels/* && \
   # Install GPU-accelerated trading packages (CUDA 13)
-  pip install --no-cache-dir \
+  sudo pip install --no-cache-dir \
     torch --index-url https://download.pytorch.org/whl/cu131 && \
-  pip install --no-cache-dir \
+  sudo pip install --no-cache-dir \
     xgboost-cu12 && \
   # Install cuDF for GPU DataFrame operations (optional, comment out if not needed)
   # pip install --user --no-cache-dir cudf-cu12 dask-cudf-cu12 --extra-index-url https://pypi.nvidia.com && \
