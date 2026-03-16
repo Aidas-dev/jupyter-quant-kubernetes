@@ -94,7 +94,16 @@ RUN apt-get update && \
     else \
       addgroup --gid "${USER_GID}" "${USER}" 2>/dev/null || true; \
     fi && \
-    if ! id -u "${USER}" >/dev/null 2>&1; then \
+    # Handle case where UID 1000 already exists (use existing user or create new one)
+    if id -u "${USER}" >/dev/null 2>&1; then \
+      # User exists, just ensure correct group membership
+      usermod -g "${USER_GID}" "${USER}" 2>/dev/null || true; \
+    elif getent passwd "${USER_ID}" >/dev/null 2>&1; then \
+      # UID exists but with different username, use that user
+      EXISTING_USER=$(getent passwd "${USER_ID}" | cut -d: -f1); \
+      echo "Using existing user ${EXISTING_USER} with UID ${USER_ID}"; \
+    else \
+      # Create new user with specified UID/GID
       useradd -ms /bin/bash --uid "${USER_ID}" --gid "${USER_GID}" "${USER}"; \
     fi && \
     echo "${USER} ALL=(ALL) NOPASSWD:ALL" | tee -a /etc/sudoers && \

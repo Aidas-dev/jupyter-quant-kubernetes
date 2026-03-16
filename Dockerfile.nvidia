@@ -38,7 +38,7 @@ ARG IMAGE_VERSION=1.0.0
 ENV SETUPTOOLS_SCM_PRETEND_VERSION=${IMAGE_VERSION}
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-RUN python3 -m pip install --no-cache-dir -U \
+RUN python3 -m pip install --no-cache-dir -U --break-system-packages \
     build pip setuptools wheel setuptools_scm && \
     python3 -m build && \
     pip wheel --no-cache-dir --wheel-dir /wheels . && \
