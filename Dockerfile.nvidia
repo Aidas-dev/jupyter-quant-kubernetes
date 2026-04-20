@@ -2,7 +2,7 @@
 # Builder stage
 ###############################################################################
 # hadolint global ignore=DL3003,DL3008,SC2028,DL3013
-FROM nvidia/cuda:13.1.1-base-ubuntu24.04 AS builder
+FROM nvidia/cuda:13.2.1-base-ubuntu24.04 AS builder
 
 # Use TARGETARCH build argument
 ARG TARGETARCH
@@ -50,7 +50,7 @@ RUN rm -f /usr/lib/python3.12/EXTERNALLY-MANAGED && \
 ###############################################################################
 # Final stage
 ###############################################################################
-FROM nvidia/cuda:13.1.1-base-ubuntu24.04
+FROM nvidia/cuda:13.2.1-base-ubuntu24.04
 
 # Use TARGETARCH build argument
 ARG TARGETARCH
